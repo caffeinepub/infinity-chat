@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { Paperclip, Send, X } from "lucide-react";
+import { Menu, Paperclip, Send, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import type { GroupId } from "../backend";
@@ -17,9 +17,10 @@ import MessageBubble from "./MessageBubble";
 
 interface Props {
   groupId: GroupId;
+  onOpenSidebar: () => void;
 }
 
-export default function ChatWindow({ groupId }: Props) {
+export default function ChatWindow({ groupId, onOpenSidebar }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [replyTo, setReplyTo] = useState<{
     id: string;
@@ -35,7 +36,8 @@ export default function ChatWindow({ groupId }: Props) {
   const currentUserId = useCurrentIdentity();
 
   const group = groups?.find((g) => g.id === groupId);
-  const groupName = group?.name ?? "Chat";
+  const groupName =
+    group?.name ?? groupId.charAt(0).toUpperCase() + groupId.slice(1);
 
   // Sort by timestamp ascending, then rolling window of 50
   const displayMessages = (messages ?? [])
@@ -120,17 +122,21 @@ export default function ChatWindow({ groupId }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-border bg-card/50 flex-shrink-0">
-        <div className="w-10 h-10 rounded-2xl message-bubble-own flex items-center justify-center text-white font-bold text-sm">
-          {groupName.charAt(0).toUpperCase()}
-        </div>
-        <div>
-          <h2 className="font-semibold text-sm">{groupName}</h2>
-          <p className="text-xs text-muted-foreground">
-            {group ? `${group.members.length} members` : ""}
-          </p>
-        </div>
+      {/* Compact header with menu + channel name */}
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-card/50 flex-shrink-0">
+        <button
+          type="button"
+          aria-label="Open menu"
+          className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-accent/60 transition-colors flex-shrink-0"
+          onClick={onOpenSidebar}
+          data-ocid="chat.open_modal_button"
+        >
+          <Menu className="w-4 h-4" />
+        </button>
+        <span className="font-bold text-base tracking-tight bg-gradient-to-r from-[oklch(0.72_0.24_15)] to-[oklch(0.65_0.22_300)] bg-clip-text text-transparent">
+          Infinity Chat
+        </span>
+        <span className="text-sm text-muted-foreground">#{groupName}</span>
       </div>
 
       {/* Messages */}
@@ -172,8 +178,6 @@ export default function ChatWindow({ groupId }: Props) {
                 const sameSenderAsPrev =
                   prevMsg &&
                   prevMsg.sender.toString() === message.sender.toString();
-                // Show avatar on the last message in a consecutive run
-                // Show name on the first message in a consecutive run
                 const showAvatar = !sameSenderAsNext;
                 const showName = !sameSenderAsPrev;
                 return (

@@ -3,18 +3,18 @@ import { Input } from "@/components/ui/input";
 import { MessageCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
-export default function LandingPage() {
-  const { login, loginStatus } = useInternetIdentity();
-  const isLoggingIn = loginStatus === "logging-in";
+interface LandingPageProps {
+  onJoin: (name: string) => void;
+}
+
+export default function LandingPage({ onJoin }: LandingPageProps) {
   const [name, setName] = useState("");
 
   const handleJoin = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    localStorage.setItem("infinity_chat_display_name", trimmed);
-    login();
+    onJoin(trimmed);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -23,7 +23,6 @@ export default function LandingPage() {
 
   return (
     <div className="h-full flex items-center justify-center overflow-auto bg-background px-4">
-      {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-primary/10 blur-[120px]" />
       </div>
@@ -34,7 +33,6 @@ export default function LandingPage() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative z-10 flex flex-col items-center text-center max-w-sm w-full"
       >
-        {/* Logo */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -90,16 +88,9 @@ export default function LandingPage() {
             size="lg"
             className="w-full py-6 text-base font-semibold rounded-2xl message-bubble-own text-white shadow-glow hover:opacity-90 transition-opacity border-0"
             onClick={handleJoin}
-            disabled={isLoggingIn || !name.trim()}
+            disabled={!name.trim()}
           >
-            {isLoggingIn ? (
-              <span className="flex items-center gap-2 justify-center">
-                <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                Joining...
-              </span>
-            ) : (
-              "Join Chat"
-            )}
+            Join Chat
           </Button>
         </motion.div>
 
