@@ -14,6 +14,8 @@ interface Props {
   isOwn: boolean;
   groupId: GroupId;
   onReply: (replyTo: { id: string; snippet: string }) => void;
+  showAvatar?: boolean;
+  showName?: boolean;
 }
 
 function groupReactions(reactions: Message["reactions"]) {
@@ -80,6 +82,8 @@ export default function MessageBubble({
   isOwn,
   groupId,
   onReply,
+  showAvatar = true,
+  showName = true,
 }: Props) {
   const [showPicker, setShowPicker] = useState(false);
   const { mutate: addReaction } = useAddReaction(groupId);
@@ -109,10 +113,10 @@ export default function MessageBubble({
         isOwn ? "flex-row-reverse" : "flex-row"
       } py-[2px]`}
     >
-      {/* Avatar */}
+      {/* Avatar placeholder keeps alignment even when hidden */}
       {!isOwn && (
-        <div className="flex-shrink-0 mb-1">
-          <SenderAvatar senderId={senderId} size={30} />
+        <div className="flex-shrink-0 mb-1" style={{ width: 30 }}>
+          {showAvatar && <SenderAvatar senderId={senderId} size={30} />}
         </div>
       )}
 
@@ -121,8 +125,8 @@ export default function MessageBubble({
           isOwn ? "items-end" : "items-start"
         }`}
       >
-        {/* Username (others only) */}
-        {!isOwn && <SenderName senderId={senderId} />}
+        {/* Username — only for first message in a run */}
+        {!isOwn && showName && <SenderName senderId={senderId} />}
 
         {/* Bubble + hover actions */}
         <div className="relative" onMouseLeave={() => setShowPicker(false)}>
@@ -254,7 +258,7 @@ export default function MessageBubble({
           )}
         </AnimatePresence>
 
-        {/* Timestamp - always visible */}
+        {/* Timestamp */}
         <span className="text-[10px] text-muted-foreground mt-0.5 px-1">
           {formatTime(message.timestamp)}
         </span>

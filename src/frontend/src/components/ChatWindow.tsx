@@ -81,7 +81,6 @@ export default function ChatWindow({ groupId }: Props) {
     });
     setReplyTo(null);
     sendMessage(payload);
-    // Always keep keyboard/input active after send
     focusInput();
   };
 
@@ -164,15 +163,31 @@ export default function ChatWindow({ groupId }: Props) {
             </div>
           ) : (
             <AnimatePresence initial={false}>
-              {displayMessages.map((message) => (
-                <MessageBubble
-                  key={message.id.toString()}
-                  message={message}
-                  isOwn={message.sender.toString() === currentUserId}
-                  groupId={groupId}
-                  onReply={setReplyTo}
-                />
-              ))}
+              {displayMessages.map((message, idx) => {
+                const nextMsg = displayMessages[idx + 1];
+                const prevMsg = displayMessages[idx - 1];
+                const sameSenderAsNext =
+                  nextMsg &&
+                  nextMsg.sender.toString() === message.sender.toString();
+                const sameSenderAsPrev =
+                  prevMsg &&
+                  prevMsg.sender.toString() === message.sender.toString();
+                // Show avatar on the last message in a consecutive run
+                // Show name on the first message in a consecutive run
+                const showAvatar = !sameSenderAsNext;
+                const showName = !sameSenderAsPrev;
+                return (
+                  <MessageBubble
+                    key={message.id.toString()}
+                    message={message}
+                    isOwn={message.sender.toString() === currentUserId}
+                    groupId={groupId}
+                    onReply={setReplyTo}
+                    showAvatar={showAvatar}
+                    showName={showName}
+                  />
+                );
+              })}
             </AnimatePresence>
           )}
         </div>
