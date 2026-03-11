@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.75rem;
+    --background: 0.10 0.006 50;
+    --foreground: 0.95 0.005 50;
+    --card: 0.14 0.006 50;
+    --card-foreground: 0.95 0.005 50;
+    --popover: 0.16 0.006 50;
+    --popover-foreground: 0.95 0.005 50;
+    --primary: 0.62 0.22 15;
+    --primary-foreground: 0.99 0 0;
+    --secondary: 0.19 0.008 50;
+    --secondary-foreground: 0.90 0.005 50;
+    --muted: 0.18 0.006 50;
+    --muted-foreground: 0.52 0.010 50;
+    --accent: 0.22 0.010 50;
+    --accent-foreground: 0.90 0.005 50;
+    --destructive: 0.60 0.22 25;
+    --destructive-foreground: 0.99 0 0;
+    --border: 0.22 0.008 50;
+    --input: 0.20 0.008 50;
+    --ring: 0.62 0.22 15;
+    --chart-1: 0.62 0.22 15;
+    --chart-2: 0.65 0.15 200;
+    --chart-3: 0.72 0.18 130;
+    --chart-4: 0.65 0.15 280;
+    --chart-5: 0.72 0.16 65;
+    --sidebar: 0.12 0.006 50;
+    --sidebar-foreground: 0.95 0.005 50;
+    --sidebar-primary: 0.62 0.22 15;
+    --sidebar-primary-foreground: 0.99 0 0;
+    --sidebar-accent: 0.18 0.008 50;
+    --sidebar-accent-foreground: 0.90 0.005 50;
+    --sidebar-border: 0.20 0.008 50;
+    --sidebar-ring: 0.62 0.22 15;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: oklch(var(--border));
+    border-radius: 2px;
+  }
+
+  /* Red-to-purple gradient for own message bubbles, buttons, logo */
+  .message-bubble-own {
+    background: linear-gradient(135deg, oklch(0.62 0.24 15), oklch(0.52 0.22 300));
+  }
+
+  /* Top bar gradient accent line */
+  .gradient-bar {
+    background: linear-gradient(90deg, oklch(0.62 0.24 15), oklch(0.52 0.22 300));
+  }
+
+  .glass-panel {
+    background: oklch(var(--card) / 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px oklch(var(--primary) / 0.25);
+  }
+
+  /* Smooth message entrance */
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+}
