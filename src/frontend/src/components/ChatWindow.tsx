@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { Paperclip, Send, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { GroupId } from "../backend";
 import {
   useCurrentIdentity,
@@ -11,17 +12,11 @@ import {
   useSendMessage,
 } from "../hooks/useQueries";
 import { compressImage, validateImageFile } from "../utils/imageUtils";
-import { serializeContent } from "../utils/messageUtils";
+import { parseContent, serializeContent } from "../utils/messageUtils";
 import MessageBubble from "./MessageBubble";
 
 interface Props {
   groupId: GroupId;
-}
-
-function isSameMinute(a: bigint, b: bigint): boolean {
-  const aMin = Number(a / 60_000_000_000n);
-  const bMin = Number(b / 60_000_000_000n);
-  return aMin === bMin;
 }
 
 export default function ChatWindow({ groupId }: Props) {
@@ -51,7 +46,7 @@ export default function ChatWindow({ groupId }: Props) {
 
   // Scroll to bottom on initial load (instant) and new messages (smooth)
   const prevCountRef = useRef(0);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new message
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional trigger
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
@@ -69,34 +64,32 @@ export default function ChatWindow({ groupId }: Props) {
     textareaRef.current?.focus();
   }, [groupId]);
 
-  const focusInput = useCallback(() => {
-    textareaRef.current?.focus();
-  }, []);
+  const focusInput = () => {
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+    });
+  };
 
-  const handleSend = useCallback(() => {
+  const handleSend = () => {
     const content = inputValue.trim();
     if (!content) return;
+    setInputValue("");
     const payload = serializeContent({
       type: "text",
       text: content,
       ...(replyTo ? { replyTo } : {}),
     });
-    setInputValue("");
     setReplyTo(null);
     sendMessage(payload);
-    // Keep focus immediately — no RAF needed
-    textareaRef.current?.focus();
-  }, [inputValue, replyTo, sendMessage]);
+    focusInput();
+  };
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSend();
-      }
-    },
-    [handleSend],
-  );
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -179,12 +172,10 @@ export default function ChatWindow({ groupId }: Props) {
                 const sameSenderAsPrev =
                   prevMsg &&
                   prevMsg.sender.toString() === message.sender.toString();
+                // Show avatar on the last message in a consecutive run
+                // Show name on the first message in a consecutive run
                 const showAvatar = !sameSenderAsNext;
                 const showName = !sameSenderAsPrev;
-                // Hide timestamp if the next message is within the same minute
-                const showTimestamp =
-                  !nextMsg ||
-                  !isSameMinute(message.timestamp, nextMsg.timestamp);
                 return (
                   <MessageBubble
                     key={message.id.toString()}
@@ -194,7 +185,6 @@ export default function ChatWindow({ groupId }: Props) {
                     onReply={setReplyTo}
                     showAvatar={showAvatar}
                     showName={showName}
-                    showTimestamp={showTimestamp}
                   />
                 );
               })}
@@ -252,15 +242,16 @@ export default function ChatWindow({ groupId }: Props) {
             <Paperclip className="w-4 h-4" />
           </Button>
 
-          <textarea
+          <Textarea
             ref={textareaRef}
             data-ocid="chat.textarea"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Message..."
-            className="flex-1 resize-none bg-input border border-border rounded-2xl min-h-[44px] max-h-32 py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 scrollbar-thin"
+            className="flex-1 resize-none bg-input border-border rounded-2xl min-h-[44px] max-h-32 py-3 px-4 text-sm focus:ring-2 focus:ring-primary/30 scrollbar-thin"
             rows={1}
+            autoFocus
           />
           <Button
             data-ocid="chat.submit_button"

@@ -16,7 +16,6 @@ interface Props {
   onReply: (replyTo: { id: string; snippet: string }) => void;
   showAvatar?: boolean;
   showName?: boolean;
-  showTimestamp?: boolean;
 }
 
 function groupReactions(reactions: Message["reactions"]) {
@@ -85,7 +84,6 @@ export default function MessageBubble({
   onReply,
   showAvatar = true,
   showName = true,
-  showTimestamp = true,
 }: Props) {
   const [showPicker, setShowPicker] = useState(false);
   const { mutate: addReaction } = useAddReaction(groupId);
@@ -107,9 +105,10 @@ export default function MessageBubble({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.15, ease: "easeOut" }}
+      layout
+      initial={{ opacity: 0, y: 8, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={`group flex items-end gap-2 mb-0 ${
         isOwn ? "flex-row-reverse" : "flex-row"
       } py-[2px]`}
@@ -259,12 +258,10 @@ export default function MessageBubble({
           )}
         </AnimatePresence>
 
-        {/* Timestamp — only shown when minute changes */}
-        {showTimestamp && (
-          <span className="text-[10px] text-muted-foreground mt-0.5 px-1">
-            {formatTime(message.timestamp)}
-          </span>
-        )}
+        {/* Timestamp */}
+        <span className="text-[10px] text-muted-foreground mt-0.5 px-1">
+          {formatTime(message.timestamp)}
+        </span>
       </div>
     </motion.div>
   );
