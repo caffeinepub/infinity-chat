@@ -148,11 +148,13 @@ export interface backendInterface {
     getGroupMembers(groupId: GroupId): Promise<Array<UserId>>;
     getLastActive(user: UserId): Promise<Time>;
     getMessageHistory(groupId: GroupId, start: bigint): Promise<Array<Message>>;
+    getAllGroups(): Promise<Array<Group>>;
     getUserGroups(): Promise<Array<Group>>;
     getUserProfile(user: UserId): Promise<UserProfile | null>;
     inviteToGroup(groupId: GroupId, userId: UserId): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     isGroupMember(groupId: GroupId): Promise<boolean>;
+    joinGroup(groupId: GroupId): Promise<void>;
     leaveGroup(groupId: GroupId): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendMessage(groupId: GroupId, content: string): Promise<Message>;
@@ -384,6 +386,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getAllGroups(): Promise<Array<Group>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllGroups();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllGroups();
+            return result;
+        }
+    }
     async getUserGroups(): Promise<Array<Group>> {
         if (this.processError) {
             try {
@@ -451,6 +467,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.isGroupMember(arg0);
+            return result;
+        }
+    }
+    async joinGroup(arg0: GroupId): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.joinGroup(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.joinGroup(arg0);
             return result;
         }
     }

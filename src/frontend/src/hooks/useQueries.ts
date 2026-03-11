@@ -53,6 +53,36 @@ export function useGetUserGroups() {
   });
 }
 
+export function useGetAllGroups() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Group[]>({
+    queryKey: ["allGroups"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllGroups();
+    },
+    enabled: !!actor && !isFetching,
+    refetchInterval: 10000,
+  });
+}
+
+export function useJoinGroup() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (groupId: GroupId) => {
+      if (!actor) throw new Error("Actor not available");
+      return actor.joinGroup(groupId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["allGroups"] });
+    },
+  });
+}
+
 export function useGetMessageHistory(groupId: GroupId | null) {
   const { actor, isFetching } = useActor();
 
@@ -112,6 +142,7 @@ export function useCreateGroup() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userGroups"] });
+      queryClient.invalidateQueries({ queryKey: ["allGroups"] });
     },
   });
 }

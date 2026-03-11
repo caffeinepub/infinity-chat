@@ -94,6 +94,26 @@ actor {
     groupId;
   };
 
+  public shared ({ caller }) func joinGroup(groupId : GroupId) : async () {
+    let group = switch (groups.get(groupId)) {
+      case (null) { Runtime.trap("Group does not exist") };
+      case (?g) { g };
+    };
+
+    if (isMember(group.members, caller)) {
+      return; // Already a member, no-op
+    };
+
+    let newMembers = group.members.concat([caller]);
+    let updatedGroup = {
+      id = group.id;
+      name = group.name;
+      members = newMembers;
+      messages = group.messages;
+    };
+    groups.add(groupId, updatedGroup);
+  };
+
   public shared ({ caller }) func inviteToGroup(groupId : GroupId, userId : UserId) : async () {
     let group = switch (groups.get(groupId)) {
       case (null) { Runtime.trap("Group does not exist") };
@@ -137,6 +157,11 @@ actor {
   public query ({ caller }) func getUserGroups() : async [Group] {
     let allGroups = groups.values().toArray();
     allGroups.filter(func(group) { isMember(group.members, caller) });
+  };
+
+  // Returns all groups so any user can discover and join them
+  public query ({ caller }) func getAllGroups() : async [Group] {
+    groups.values().toArray();
   };
 
   // Messaging

@@ -44,6 +44,7 @@ export interface backendInterface {
     createGroup(name: string): Promise<GroupId>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getAllGroups(): Promise<Array<Group>>;
     getGroupList(): Promise<Array<Group>>;
     getGroupMembers(groupId: GroupId): Promise<Array<UserId>>;
     getLastActive(user: UserId): Promise<Time>;
@@ -53,6 +54,7 @@ export interface backendInterface {
     inviteToGroup(groupId: GroupId, userId: UserId): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     isGroupMember(groupId: GroupId): Promise<boolean>;
+    joinGroup(groupId: GroupId): Promise<void>;
     leaveGroup(groupId: GroupId): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendMessage(groupId: GroupId, content: string): Promise<Message>;
