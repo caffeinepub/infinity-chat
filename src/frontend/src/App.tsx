@@ -7,7 +7,7 @@ import { useInternetIdentity } from "./hooks/useInternetIdentity";
 import { useGetCallerUserProfile } from "./hooks/useQueries";
 
 export default function App() {
-  const { identity } = useInternetIdentity();
+  const { identity, isInitializing } = useInternetIdentity();
   const { isFetching: actorFetching } = useActor();
   const {
     data: userProfile,
@@ -16,7 +16,14 @@ export default function App() {
   } = useGetCallerUserProfile();
 
   const isAuthenticated = !!identity;
-  const isLoading = actorFetching || profileLoading;
+
+  // Show loading whenever we're not fully ready for an authenticated user
+  const isLoading =
+    isInitializing ||
+    actorFetching ||
+    profileLoading ||
+    (isAuthenticated && !isFetched);
+
   const showProfileSetup =
     isAuthenticated && !isLoading && isFetched && userProfile === null;
   const showChat =
@@ -24,8 +31,8 @@ export default function App() {
 
   return (
     <div className="h-full bg-background">
-      {!isAuthenticated && <LandingPage />}
-      {isAuthenticated && isLoading && (
+      {!isAuthenticated && !isLoading && <LandingPage />}
+      {isLoading && (
         <div className="h-full flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
