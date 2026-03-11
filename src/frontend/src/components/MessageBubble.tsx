@@ -4,7 +4,6 @@ import { useState } from "react";
 import type { GroupId, Message } from "../backend";
 import { useAddReaction, useGetUserProfile } from "../hooks/useQueries";
 import { getSnippet, parseContent } from "../utils/messageUtils";
-import { formatTime } from "../utils/timeUtils";
 
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "😡"];
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -257,11 +256,6 @@ export default function MessageBubble({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Timestamp */}
-        <span className="text-[10px] text-muted-foreground mt-0.5 px-1">
-          {formatTime(message.timestamp)}
-        </span>
       </div>
     </motion.div>
   );

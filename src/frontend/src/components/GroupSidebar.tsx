@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { LogOut, Plus, UserPlus, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Group, GroupId, UserProfile } from "../backend";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import {
@@ -55,6 +55,7 @@ export default function GroupSidebar({
   const { clear } = useInternetIdentity();
   const queryClient = useQueryClient();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const autoJoinedRef = useRef(false);
 
   const myGroupIds = new Set((myGroups ?? []).map((g) => g.id));
   const sortedMyGroups = myGroups ? sortGroupsByRecent(myGroups) : [];
@@ -62,15 +63,39 @@ export default function GroupSidebar({
     (g) => !myGroupIds.has(g.id),
   );
 
+  const handleJoin = useCallback(
+    async (groupId: GroupId) => {
+      await joinGroup.mutateAsync(groupId);
+      onSelectGroup(groupId);
+      onClose();
+    },
+    [joinGroup, onSelectGroup, onClose],
+  );
+
+  // Auto-join the first discoverable group for new users
+  useEffect(() => {
+    if (
+      !isLoading &&
+      myGroups !== undefined &&
+      myGroups.length === 0 &&
+      discoverableGroups.length > 0 &&
+      !joinGroup.isPending &&
+      !autoJoinedRef.current
+    ) {
+      autoJoinedRef.current = true;
+      handleJoin(discoverableGroups[0].id);
+    }
+  }, [
+    isLoading,
+    myGroups,
+    discoverableGroups,
+    joinGroup.isPending,
+    handleJoin,
+  ]);
+
   const handleLogout = async () => {
     await clear();
     queryClient.clear();
-  };
-
-  const handleJoin = async (groupId: GroupId) => {
-    await joinGroup.mutateAsync(groupId);
-    onSelectGroup(groupId);
-    onClose();
   };
 
   return (

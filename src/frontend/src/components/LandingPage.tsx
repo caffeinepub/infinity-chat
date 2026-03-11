@@ -1,23 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 import { MessageCircle } from "lucide-react";
 import { motion } from "motion/react";
+import { useState } from "react";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
 export default function LandingPage() {
   const { login, loginStatus } = useInternetIdentity();
-  const queryClient = useQueryClient();
   const isLoggingIn = loginStatus === "logging-in";
+  const [name, setName] = useState("");
 
-  const handleLogin = async () => {
-    try {
-      await login();
-    } catch (error: any) {
-      if (error?.message === "User is already authenticated") {
-        queryClient.clear();
-        setTimeout(() => login(), 300);
-      }
-    }
+  const handleJoin = () => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    localStorage.setItem("infinity_chat_display_name", trimmed);
+    login();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleJoin();
   };
 
   return (
@@ -61,31 +62,43 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.4 }}
-          className="text-muted-foreground text-base mb-10 leading-relaxed"
+          className="text-muted-foreground text-base mb-8 leading-relaxed"
         >
-          Smooth, instant group messaging with images, reactions, and threads.
+          Smooth, instant group messaging. Join from anywhere, no account
+          needed.
         </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.4 }}
-          className="w-full"
+          className="w-full flex flex-col gap-3"
         >
+          <Input
+            data-ocid="landing.input"
+            type="text"
+            placeholder="Enter your name to join..."
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="h-12 rounded-2xl bg-muted border-border text-foreground placeholder:text-muted-foreground text-base px-4"
+            autoFocus
+            maxLength={32}
+          />
           <Button
             data-ocid="landing.primary_button"
             size="lg"
             className="w-full py-6 text-base font-semibold rounded-2xl message-bubble-own text-white shadow-glow hover:opacity-90 transition-opacity border-0"
-            onClick={handleLogin}
-            disabled={isLoggingIn}
+            onClick={handleJoin}
+            disabled={isLoggingIn || !name.trim()}
           >
             {isLoggingIn ? (
               <span className="flex items-center gap-2 justify-center">
                 <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                Signing in...
+                Joining...
               </span>
             ) : (
-              "Sign in to get started"
+              "Join Chat"
             )}
           </Button>
         </motion.div>
